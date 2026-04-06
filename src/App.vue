@@ -1,41 +1,59 @@
 <script setup lang="ts">
 import { useLiff } from './composables/useLiff';
-import { useTodos } from './composables/useTodos';
-
 import UserProfile from './components/UserProfile.vue';
-import TodoInput from './components/TodoInput.vue';
-import TodoList from './components/TodoList.vue';
+import { ref } from 'vue';
 
-// 領域邏輯 (Hooks)
 const { profile, closeAndSendMessage } = useLiff();
-const { todos, addTodo, removeTodo, getRemainingCount } = useTodos();
+const isDark = ref(true);
 
-// UI 互動邏輯
-const handleCloseAndSend = async () => {
-  const remaining = getRemainingCount();
-  const userName = profile.value?.displayName || '';
-  const message = `📋 [待辦更新] ${userName} 還有 ${remaining} 項任務待完成！`;
-  await closeAndSendMessage(message);
+const toggleTheme = () => {
+  isDark.value = !isDark.value;
+  document.documentElement.setAttribute('data-bs-theme', isDark.value ? 'dark' : 'light');
 };
 </script>
 
 <template>
-  <div v-if="profile" class="container py-4">
+  <div v-if="profile" class="container py-4 mx-auto" style="max-width: 480px;">
+    <!-- 工具列 -->
+    <div class="d-flex justify-content-end mb-3">
+      <button @click="toggleTheme" class="btn btn-sm btn-outline-secondary border-0 rounded-pill px-3 shadow-sm bg-body">
+        <span v-if="isDark">☀️ 日間模式</span>
+        <span v-else>🌙 深色模式</span>
+      </button>
+    </div>
+    
     <UserProfile :profile="profile" />
     
-    <TodoInput @add="addTodo" />
-    
-    <TodoList :todos="todos" @remove="removeTodo" />
+    <!-- 導覽列 -->
+    <ul class="nav nav-pills nav-fill mb-4 custom-nav bg-body-tertiary rounded-pill p-1 shadow-sm border border-secondary-subtle">
+      <li class="nav-item">
+        <router-link to="/" class="nav-link rounded-pill py-2 text-secondary fw-semibold" active-class="active text-white bg-primary shadow">餐廳清單</router-link>
+      </li>
+      <li class="nav-item">
+        <router-link to="/wheel" class="nav-link rounded-pill py-2 text-secondary fw-semibold" active-class="active text-white bg-primary shadow">幸運輪盤</router-link>
+      </li>
+    </ul>
 
-    <button @click="handleCloseAndSend" class="btn btn-dark w-100 py-2 mt-2">
-      整理完畢並關閉
-    </button>
+    <!-- 頁面視圖 -->
+    <router-view v-slot="{ Component }">
+      <transition name="fade" mode="out-in">
+        <component :is="Component" :closeAndSendMessage="closeAndSendMessage" />
+      </transition>
+    </router-view>
   </div>
   
-  <div v-else class="container py-4 text-center">
-    <div class="spinner-border text-primary mb-3" role="status">
-      <span class="visually-hidden">載入中...</span>
-    </div>
-    <p>正在拉取 LINE 用戶資料...</p>
+  <div v-else class="container py-5 text-center d-flex flex-column align-items-center justify-content-center" style="height: 100vh; max-width: 480px;">
+    <div class="spinner-grow text-primary mb-4" role="status" style="width: 3rem; height: 3rem;"></div>
+    <p class="text-muted fw-medium text-uppercase tracking-wider" style="letter-spacing: 2px;">Syncing LINE Profile...</p>
   </div>
 </template>
+
+<style>
+body {
+  background-color: var(--bs-body-bg);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+.nav-pills .nav-link {
+  transition: all 0.3s ease;
+}
+</style>

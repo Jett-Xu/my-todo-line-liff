@@ -4,6 +4,12 @@ export interface Todo {
   done: boolean;
 }
 
+export interface Restaurant {
+  id: number;
+  text: string;
+  selected: boolean;
+}
+
 export interface UserProfile {
   userId: string;
   displayName: string;

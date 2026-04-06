@@ -1,6 +1,44 @@
-// 1. 在引入 Bootstrap 之前，覆寫你想改的變數
-$primary: #007bff; // 你可以改成精誠的品牌色
-$enable-shadows: true;
+// 覆寫 Bootstrap 變數 - 簡約歐美風
+$primary: #6366f1; // Muted modern indigo
+$font-family-sans-serif: 'Inter', system-ui, -apple-system, sans-serif;
+$border-radius: 0.75rem;
+$border-radius-sm: 0.5rem;
+$border-radius-lg: 1rem;
 
-// 2. 引入 Bootstrap 的核心 SCSS
 @import "bootstrap/scss/bootstrap";
+
+// 調整 Input 與 Button 的細節質感
+.form-control, .btn {
+  box-shadow: none !important; // 移除預設的光暈
+  transition: all 0.2s ease;
+}
+
+.form-control:focus {
+  border-color: rgba($primary, 0.5);
+  background-color: var(--bs-body-bg);
+}
+
+// 微小的項目動畫效果
+.list-group-item {
+  border: 1px solid var(--bs-border-color-translucent);
+  margin-bottom: 8px;
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+  &:hover {
+    transform: translateX(4px);
+    background-color: var(--bs-tertiary-bg);
+  }
+}
+
+.list-group {
+  border-radius: 0;
+}
+
+// Custom animations
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: translateY(10px);
+}
