@@ -1,56 +1,41 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
-import liff from '@line/liff';
+import { useLiff } from './composables/useLiff';
+import { useTodos } from './composables/useTodos';
 
-const profile = ref<any>(null);
-const liffId = import.meta.env.VITE_LIFF_ID;
+import UserProfile from './components/UserProfile.vue';
+import TodoInput from './components/TodoInput.vue';
+import TodoList from './components/TodoList.vue';
 
-onMounted(async () => {
-  try {
-    await liff.init({ liffId });
-    if (liff.isLoggedIn()) {
-      profile.value = await liff.getProfile();
-    } else {
-      liff.login();
-    }
-  } catch (err) {
-    console.error('LIFF Init Failed', err);
-  }
-});
+// 領域邏輯 (Hooks)
+const { profile, closeAndSendMessage } = useLiff();
+const { todos, addTodo, removeTodo, getRemainingCount } = useTodos();
 
-const closeAndSend = async () => {
-  // 這是在面試時最能展示功能的一招：從網頁傳訊息回聊天室
-  if (liff.isInClient()) {
-    await liff.sendMessages([
-      {
-        type: 'text',
-        text: `📍 [系統通知] ${profile.value?.displayName} 已完成清單整理！`
-      }
-    ]);
-    liff.closeWindow();
-  }
+// UI 互動邏輯
+const handleCloseAndSend = async () => {
+  const remaining = getRemainingCount();
+  const userName = profile.value?.displayName || '';
+  const message = `📋 [待辦更新] ${userName} 還有 ${remaining} 項任務待完成！`;
+  await closeAndSendMessage(message);
 };
 </script>
 
 <template>
   <div v-if="profile" class="container py-4">
-    <header class="text-center mb-4">
-      <img :src="profile.pictureUrl" width="80" class="rounded-circle mb-2" />
-      <h3>你好，{{ profile.displayName }}</h3>
-      <p class="text-muted">這是你的待辦清單</p>
-    </header>
+    <UserProfile :profile="profile" />
+    
+    <TodoInput @add="addTodo" />
+    
+    <TodoList :todos="todos" @remove="removeTodo" />
 
-    <main>
-      <div class="list-group mb-3">
-         </div>
-      <button @click="closeAndSend" class="btn btn-primary w-100">完成並返回聊天室</button>
-    </main>
+    <button @click="handleCloseAndSend" class="btn btn-dark w-100 py-2 mt-2">
+      整理完畢並關閉
+    </button>
   </div>
-  <div v-else class="text-center py-5">
-    載入中...
+  
+  <div v-else class="container py-4 text-center">
+    <div class="spinner-border text-primary mb-3" role="status">
+      <span class="visually-hidden">載入中...</span>
+    </div>
+    <p>正在拉取 LINE 用戶資料...</p>
   </div>
 </template>
-
-<style scoped>
-.container { max-width: 500px; }
-</style>
