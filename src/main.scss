@@ -1,0 +1,6 @@
+// 1. 在引入 Bootstrap 之前，覆寫你想改的變數
+$primary: #007bff; // 你可以改成精誠的品牌色
+$enable-shadows: true;
+
+// 2. 引入 Bootstrap 的核心 SCSS
+@import "bootstrap/scss/bootstrap";
